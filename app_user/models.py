@@ -9,3 +9,6 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=20, null=True, blank=True, unique=False)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
+
+    def send_email(self, data):
+        pass
