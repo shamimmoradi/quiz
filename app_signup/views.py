@@ -2,7 +2,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
-from app_singup.serializers import SignupSerializer
+from app_signup.serializers import SignupSerializer
 
 
 class SignupView(generics.CreateAPIView):
