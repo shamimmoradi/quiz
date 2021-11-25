@@ -28,7 +28,7 @@ class SignupSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super(SignupSerializer, self).__init__(*args, **kwargs)
 
-        self.fields["password"].validators = [MinLengthValidator(8, message=_("پسورد باید حداقل ۸ کاراکتر و ترکیبی از حروف و اعداد باشد"))]
+        self.fields["password"].validators = [MinLengthValidator(8, message=_("پسورد باید حداقل ۸ کاراکتر داشته باشد"))]
         self.fields["password"].error_messages["required"] = u"ارسال پسورد اجباری است"
         self.fields["password"].error_messages["blank"] = u"پسورد نباید خالی باشد"
 
@@ -47,18 +47,15 @@ class SignupSerializer(serializers.ModelSerializer):
             })
         return value.lower()
 
+    def validate(self, attrs):
+        return super().validate(attrs)
+
     def create(self, validated_data):
-        user = User.objects.create(**validated_data)
-
-        otp_code_length = 5
-        otp_code = str(random.randint((10 ** (otp_code_length - 1)), (10 ** otp_code_length - 1)))
-
+        user = User.objects.create_user(validated_data)
+        otp_code = random.randint(10000, 99999)
         rds = redis.StrictRedis(decode_responses=True, host='localhost', port=6379, db=0)
         rds.set(f"{user.email}_otp_code_signup", otp_code)
         rds.expire(f"{user.email}_otp_code_signup", 60 * 30) # 30min
-        user.send_email({
-            "title": "فعالسازی ثبت نام",
-            "code": otp_code
-        })
+        user.send_email(subject='فعالسازی ثبت نام کوییز', content=str(otp_code))
 
         return True
